@@ -1,20 +1,54 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const db = require('./database/connection');
+
+// 🔒 1. استيراد الـ Guards الجديدة (authGuard للتوثيق و requireRole للصلاحيات)
+const { authGuard, requireRole, JWT_SECRET } = require('./authMiddleware');
 
 const app = express();
 const PORT = 3000;
 
-// Middleware
+// Middleware الأساسية
 app.use(cors());
 app.use(express.json());
+
+// ==========================================
+// AUTHENTICATION - تسجيل الدخول
+// ==========================================
+
+// مسار تسجيل الدخول للحصول على Token
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+
+    // فحص تجريبي (يمكن ربطه بقاعدة البيانات مستقبلاً)
+    if (username === 'admin' && password === '123456') {
+        const token = jwt.sign(
+            { username: 'admin', role: 'manager' },
+            JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+        return res.json({ message: 'تم تسجيل الدخول بنجاح', token, role: 'manager' });
+    }
+
+    if (username === 'cashier' && password === '123456') {
+        const token = jwt.sign(
+            { username: 'cashier', role: 'cashier' },
+            JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+        return res.json({ message: 'تم تسجيل الدخول بنجاح', token, role: 'cashier' });
+    }
+
+    return res.status(401).json({ error: 'اسم المستخدم أو كلمة السر غير صحيحة' });
+});
 
 // ==========================================
 // REST API ENDPOINTS - المنتجات
 // ==========================================
 
-// 1. إضافة منتج جديد
-app.post('/api/products', (req, res) => {
+// 1. إضافة منتج جديد (🔴 حصري للمدير فقط)
+app.post('/api/products', authGuard, requireRole('manager'), (req, res) => {
     const { barcode, name, price, stock_quantity } = req.body;
 
     if (!barcode || !name || price === undefined) {
@@ -45,8 +79,8 @@ app.post('/api/products', (req, res) => {
     });
 });
 
-// 2. جلب جميع المنتجات
-app.get('/api/products', (req, res) => {
+// 2. جلب جميع المنتجات (🟢 محمي بالتسجيل ومتاح للكاشير والمدير)
+app.get('/api/products', authGuard, (req, res) => {
     const sql = `SELECT * FROM products ORDER BY id DESC`;
 
     db.all(sql, [], (err, rows) => {
@@ -58,8 +92,8 @@ app.get('/api/products', (req, res) => {
     });
 });
 
-// 3. البحث عن منتج عن طريق الباركود
-app.get('/api/products/:barcode', (req, res) => {
+// 3. البحث عن منتج عن طريق الباركود (🟢 محمي بالتسجيل ومتاح للكاشير والمدير)
+app.get('/api/products/:barcode', authGuard, (req, res) => {
     const { barcode } = req.params;
     const sql = `SELECT * FROM products WHERE barcode = ?`;
 
@@ -70,8 +104,8 @@ app.get('/api/products/:barcode', (req, res) => {
     });
 });
 
-// 4. تعديل بيانات منتج عن طريق الـ ID
-app.put('/api/products/:id', (req, res) => {
+// 4. تعديل بيانات منتج (🔴 حصري للمدير فقط)
+app.put('/api/products/:id', authGuard, requireRole('manager'), (req, res) => {
     const { id } = req.params;
     const { name, price, stock_quantity } = req.body;
 
@@ -88,8 +122,8 @@ app.put('/api/products/:id', (req, res) => {
     });
 });
 
-// 5. حذف منتج عن طريق الـ ID
-app.delete('/api/products/:id', (req, res) => {
+// 5. حذف منتج (🔴 حصري للمدير فقط)
+app.delete('/api/products/:id', authGuard, requireRole('manager'), (req, res) => {
     const { id } = req.params;
     const sql = `DELETE FROM products WHERE id = ?`;
 
@@ -104,8 +138,8 @@ app.delete('/api/products/:id', (req, res) => {
 // REST API ENDPOINTS - الفواتير
 // ==========================================
 
-// 6. حفظ فاتورة جديدة (مع الخصم وخصم المخزون وحساب الإجمالي الآمن)
-app.post('/api/invoices', (req, res) => {
+// 6. حفظ فاتورة جديدة (🟢 متاح للكاشير والمدير للبيع)
+app.post('/api/invoices', authGuard, (req, res) => {
     const { items, discount = 0, paid_amount, payment_method = 'cash' } = req.body; 
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -116,7 +150,6 @@ app.post('/api/invoices', (req, res) => {
     const placeholders = barcodes.map(() => '?').join(',');
     const getProductsSql = `SELECT * FROM products WHERE barcode IN (${placeholders})`;
 
-    // جلب المنتجات من الداتا بيز للتحقق من الأسعار والمخزون
     db.all(getProductsSql, barcodes, (err, dbProducts) => {
         if (err) return res.status(500).json({ error: err.message });
 
@@ -156,7 +189,6 @@ app.post('/api/invoices', (req, res) => {
 
         const changeAmount = actualPaid - finalAmount;
 
-        // تنفيذ المعاملة الحافظة للفاتورة وخصم المخزون
         db.serialize(() => {
             db.run("BEGIN TRANSACTION");
 
@@ -215,8 +247,8 @@ app.post('/api/invoices', (req, res) => {
     });
 });
 
-// 7. جلب جميع الفواتير
-app.get('/api/invoices', (req, res) => {
+// 7. جلب جميع الفواتير (🟢 محمي بالتسجيل)
+app.get('/api/invoices', authGuard, (req, res) => {
     const sql = `SELECT * FROM invoices ORDER BY id DESC`;
 
     db.all(sql, [], (err, rows) => {
@@ -228,8 +260,8 @@ app.get('/api/invoices', (req, res) => {
     });
 });
 
-// 8. جلب تفاصيل فاتورة محددة مع جميع عناصرها
-app.get('/api/invoices/:id', (req, res) => {
+// 8. جلب تفاصيل فاتورة محددة (🟢 محمي بالتسجيل)
+app.get('/api/invoices/:id', authGuard, (req, res) => {
     const { id } = req.params;
 
     const sql = `
