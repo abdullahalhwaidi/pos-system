@@ -33,6 +33,37 @@ A fast, modular Point of Sale (POS) web application designed for cashier speed a
 ## 💻 Getting Started
 
 ### 1. Clone the Repository
-```bash
 git clone [https://github.com/abdullahalhwaidi/pos-system.git](https://github.com/abdullahalhwaidi/pos-system.git)
 cd pos-system
+
+
+## 🔄 مخطط تدفق العمليات (Process Flow)
+
+```mermaid
+graph TD
+    Start([بدء شاشة المخزون]) --> LoadData[تحميل قائمة المنتجات والإحصائيات]
+    
+    LoadData --> UserAction{اختيار الإجراء}
+
+    %% 1. مسار إضافة منتج جديد
+    UserAction -- إضافة منتج --> InputForm[إدخال بيانات المنتج: الاسم، السعر، الكمية]
+    InputForm --> CheckValid{هل الاسم والسعر مدخلان؟}
+    CheckValid -- لا --> ShowError[توقف / انتظار التعبئة]
+    CheckValid -- نعم --> AddProduct[إضافة المنتج للقائمة وزيادة العداد]
+    AddProduct --> UpdateUI[تحديث واجهة المستخدم والإحصائيات]
+
+    %% 2. مسار تعديل الكمية (+ / -)
+    UserAction -- تعديل الكمية --> ChangeStock[الضغط على زر + أو -]
+    ChangeStock --> CalcStock{هل الكمية الجديدة أقل من 0؟}
+    CalcStock -- نعم --> KeepZero[تثبيت الكمية عند 0]
+    CalcStock -- لا --> ApplyStock[تحديث قيمة المخزون]
+    KeepZero --> CheckStatus[تحديث شارة الحالة: متوفر / منخفض / نافد]
+    ApplyStock --> CheckStatus
+    CheckStatus --> UpdateUI
+
+    %% 3. مسار حذف منتج
+    UserAction -- حذف منتج --> ConfirmDelete{تأكيد الحذف عبر الرسالة؟}
+    ConfirmDelete -- لا --> CancelDelete[إلغاء العملية]
+    ConfirmDelete -- نعم --> RemoveItem[تصفية المنتج من القائمة]
+    RemoveItem --> UpdateUI
+```
