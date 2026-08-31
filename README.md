@@ -38,6 +38,7 @@ cd pos-system
 
 
 ## 🔄 مخطط تدفق العمليات (Process Flow)
+```mermaid
 graph TD
     subgraph Frontend ["Frontend (React + Vite)"]
         UI["React UI (Cashier & Inventory)"]
@@ -92,3 +93,4 @@ graph TD
     end
 
     Axios -->|HTTP Requests / REST API| Router
+```
