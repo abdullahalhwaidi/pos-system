@@ -38,7 +38,6 @@ cd pos-system
 
 
 ## 🔄 مخطط تدفق العمليات (Process Flow)
-```mermaid
 graph TD
     subgraph Frontend ["Frontend (React + Vite)"]
         UI["React UI (Cashier & Inventory)"]
@@ -86,11 +85,10 @@ graph TD
 
     subgraph Database ["Database Layer (ORM)"]
         PrismaClient["Prisma Client Config"]
-        SQLite [("SQLite Database (dev.db)")]
+        SQLite["SQLite Database (dev.db)"]
         
         Controllers --> PrismaClient
         PrismaClient --> SQLite
     end
 
     Axios -->|HTTP Requests / REST API| Router
-```
