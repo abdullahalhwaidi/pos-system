@@ -36,11 +36,10 @@ A fast, modular Point of Sale (POS) web application designed for cashier speed a
 git clone [https://github.com/abdullahalhwaidi/pos-system.git](https://github.com/abdullahalhwaidi/pos-system.git)
 cd pos-system
 
+<img width="1520" height="855" alt="login_screen" src="https://github.com/user-attachments/assets/c97787d2-b248-4b23-8416-7103361f56f7" />
+<img width="1920" height="900" alt="inventory_screen" src="https://github.com/user-attachments/assets/76af0a96-4417-4375-8254-ec548dfa3f98" />
+<img width="1920" height="883" alt="Screenshot (15)" src="https://github.com/user-attachments/assets/7331d30d-416c-41dd-9454-f164c2292e16" />
 
-
-<img width="1920" height="1080" alt="login_screen" src="https://github.com/user-attachments/assets/248ed87f-3848-47e9-98e6-6dd54ab5ef25" />
-<img width="1920" height="1080" alt="cashier_screen" src="https://github.com/user-attachments/assets/44cf61a4-a61c-4ba3-9cbb-02b5c8d858a6" />
-<img width="1920" height="1080" alt="inventory_screen" src="https://github.com/user-attachments/assets/d5315df1-9d67-42bd-adbc-440b69735d3f" />
 
 ## 🔄 مخطط تدفق العمليات (Process Flow)
 ```mermaid
