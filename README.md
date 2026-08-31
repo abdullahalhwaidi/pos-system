@@ -38,32 +38,59 @@ cd pos-system
 
 
 ## 🔄 مخطط تدفق العمليات (Process Flow)
-
 ```mermaid
 graph TD
-    Start([بدء شاشة المخزون]) --> LoadData[تحميل قائمة المنتجات والإحصائيات]
-    
-    LoadData --> UserAction{اختيار الإجراء}
+    subgraph Frontend ["Frontend (React + Vite)"]
+        UI["React UI (Cashier & Inventory)"]
+        Axios["Axios Instance (Interceptors & Auth Header)"]
+        Guard["ProtectedRoute Component"]
+        UI --> Guard
+        Guard --> Axios
+    end
 
-    %% 1. مسار إضافة منتج جديد
-    UserAction -- إضافة منتج --> InputForm[إدخال بيانات المنتج: الاسم، السعر، الكمية]
-    InputForm --> CheckValid{هل الاسم والسعر مدخلان؟}
-    CheckValid -- لا --> ShowError[توقف / انتظار التعبئة]
-    CheckValid -- نعم --> AddProduct[إضافة المنتج للقائمة وزيادة العداد]
-    AddProduct --> UpdateUI[تحديث واجهة المستخدم والإحصائيات]
+    subgraph Security ["Authentication & Security Guard"]
+        JWT["JWT Auth Middleware (auth.js)"]
+    end
 
-    %% 2. مسار تعديل الكمية (+ / -)
-    UserAction -- تعديل الكمية --> ChangeStock[الضغط على زر + أو -]
-    ChangeStock --> CalcStock{هل الكمية الجديدة أقل من 0؟}
-    CalcStock -- نعم --> KeepZero[تثبيت الكمية عند 0]
-    CalcStock -- لا --> ApplyStock[تحديث قيمة المخزون]
-    KeepZero --> CheckStatus[تحديث شارة الحالة: متوفر / منخفض / نافد]
-    ApplyStock --> CheckStatus
-    CheckStatus --> UpdateUI
+    subgraph Backend ["Backend (Node.js & Express)"]
+        Router["Express Router (/api)"]
+        
+        subgraph Routes ["Routes Layer"]
+            AuthRoute["authRoutes.js"]
+            ProdRoute["productRoutes.js"]
+            SaleRoute["saleRoutes.js"]
+            CatRoute["categoryRoutes.js"]
+        end
+        
+        subgraph Controllers ["Controllers Layer"]
+            AuthCtrl["authController.js"]
+            ProdCtrl["productController.js"]
+            SaleCtrl["saleController.js"]
+            CatCtrl["categoryController.js"]
+        end
 
-    %% 3. مسار حذف منتج
-    UserAction -- حذف منتج --> ConfirmDelete{تأكيد الحذف عبر الرسالة؟}
-    ConfirmDelete -- لا --> CancelDelete[إلغاء العملية]
-    ConfirmDelete -- نعم --> RemoveItem[تصفية المنتج من القائمة]
-    RemoveItem --> UpdateUI
+        Router --> AuthRoute
+        Router --> ProdRoute
+        Router --> SaleRoute
+        Router --> CatRoute
+
+        AuthRoute --> AuthCtrl
+        ProdRoute -->|Protected via JWT| JWT
+        SaleRoute -->|Protected via JWT| JWT
+        CatRoute -->|Protected via JWT| JWT
+
+        JWT --> ProdCtrl
+        JWT --> SaleCtrl
+        JWT --> CatCtrl
+    end
+
+    subgraph Database ["Database Layer (ORM)"]
+        PrismaClient["Prisma Client Config"]
+        SQLite [("SQLite Database (dev.db)")]
+        
+        Controllers --> PrismaClient
+        PrismaClient --> SQLite
+    end
+
+    Axios -->|HTTP Requests / REST API| Router
 ```
