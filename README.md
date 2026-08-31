@@ -37,6 +37,11 @@ git clone [https://github.com/abdullahalhwaidi/pos-system.git](https://github.co
 cd pos-system
 
 
+
+<img width="1920" height="1080" alt="login_screen" src="https://github.com/user-attachments/assets/248ed87f-3848-47e9-98e6-6dd54ab5ef25" />
+<img width="1920" height="1080" alt="cashier_screen" src="https://github.com/user-attachments/assets/44cf61a4-a61c-4ba3-9cbb-02b5c8d858a6" />
+<img width="1920" height="1080" alt="inventory_screen" src="https://github.com/user-attachments/assets/d5315df1-9d67-42bd-adbc-440b69735d3f" />
+
 ## 🔄 مخطط تدفق العمليات (Process Flow)
 ```mermaid
 graph TD
