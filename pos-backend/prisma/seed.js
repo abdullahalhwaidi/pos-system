@@ -6,10 +6,10 @@ const prisma = new PrismaClient();
 async function main() {
   const hashedPassword = await bcrypt.hash('123456', 10);
 
-  // تنظيف الجدول لتجنب التكرار
+  // Clean the table to avoid duplication
   await prisma.user.deleteMany();
 
-  // إضافة الحسابات مباشرة
+  // Seed default accounts
   await prisma.user.createMany({
     data: [
       {
@@ -27,12 +27,12 @@ async function main() {
     ],
   });
 
-  console.log('✅ تم إضافة حسابات admin و cashier بنجاح!');
+  console.log('✅ Admin and cashier accounts seeded successfully!');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ حدث خطأ:', e);
+    console.error('❌ An error occurred:', e);
   })
   .finally(async () => {
     await prisma.$disconnect();

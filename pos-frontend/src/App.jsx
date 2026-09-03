@@ -9,10 +9,10 @@ function App() {
     <Router>
       <main>
         <Routes>
-          {/* صفحة تسجيل الدخول العامة */}
+          {/* Public Login Route */}
           <Route path="/login" element={<Login />} />
 
-          {/* صفحة الكاشير: مسموحة للكاشير والمدير والأدمن */}
+          {/* Cashier Route: Accessible by cashier, manager, and admin */}
           <Route
             path="/"
             element={
@@ -22,7 +22,7 @@ function App() {
             }
           />
 
-          {/* صفحة المخزن: مسموحة للمدير والأدمن */}
+          {/* Inventory Route: Accessible by manager and admin only */}
           <Route
             path="/inventory"
             element={

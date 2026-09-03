@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-// 1. إنشاء instance من axios بالمنفذ الصحيح (3000)
+// 1. Create an Axios instance with base URL
 const api = axios.create({
   baseURL: 'http://localhost:5000/api',
 });
 
-// 2. إعداد Request Interceptor لإرفاق الـ Token تلقائياً
+// 2. Setup Request Interceptor to attach the token automatically
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -21,17 +21,17 @@ api.interceptors.request.use(
   }
 );
 
-// 3. إعداد Response Interceptor لمعالجة انتهاء الجلسة أو انتهاك الصلاحيات
+// 3. Setup Response Interceptor to handle session expiration or unauthorized access
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // إذا ارجع السيرفر 401 (غير موثق/التوكن منتهي) أو 403 (غير مصرح بالدخول)
+    // If the server returns 401 (Unauthorized/Token expired) or 403 (Forbidden)
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      // إزالة التوكن والـ role المعطوبة/المنتهية
+      // Remove expired/invalid token and role from storage
       localStorage.removeItem('token');
       localStorage.removeItem('role');
       
-      // التوجيه لصفحة تسجيل الدخول إذا لم يكن المستخدم فيها بالفعل
+      // Redirect to login page if the user is not already there
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }

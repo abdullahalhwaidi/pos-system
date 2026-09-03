@@ -4,18 +4,18 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('role');
 
-  // 1. إذا لم يكن هناك توكن، قم بالتحويل لصفحة Login
+  // 1. If there is no token, redirect to the login page
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  // 2. إذا كانت هناك أدوار محددة ولا يملك المستخدم هذا الدور
+  // 2. If specific roles are required and the user does not possess the required role
   if (allowedRoles && !allowedRoles.includes(userRole)) {
-    // إرجاعه للشاشة الرئيسية المسموحة له
+    // Redirect to their default main page
     return <Navigate to="/" replace />;
   }
 
-  // 3. السماح بالمرور للمحتوى
+  // 3. Allow access to protected content
   return children;
 };
 

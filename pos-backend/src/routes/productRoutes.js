@@ -4,10 +4,10 @@ import { authenticateToken } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// جلب المنتجات متاح لجميع المستخدمين المسجلين
+// Fetch products route - available to all authenticated users
 router.get('/', authenticateToken, getProducts);
 
-// إضافة منتج جديد
+// Create new product route
 router.post('/', authenticateToken, createProduct);
 
 export default router;

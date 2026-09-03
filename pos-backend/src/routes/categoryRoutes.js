@@ -4,7 +4,7 @@ import { authenticateToken } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// تطبيق الحماية على مسارات التصنيفات
+// Apply authentication middleware to category routes
 router.get('/', authenticateToken, getCategories);
 router.post('/', authenticateToken, createCategory);
 router.delete('/:id', authenticateToken, deleteCategory);

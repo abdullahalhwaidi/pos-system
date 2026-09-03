@@ -4,7 +4,7 @@ import { authenticateToken } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// تطبيق الحماية على مسارات المبيعات والفواتير
+// Apply authentication middleware to sales and invoice routes
 router.get('/', authenticateToken, getSales);
 router.post('/', authenticateToken, createSale);
 

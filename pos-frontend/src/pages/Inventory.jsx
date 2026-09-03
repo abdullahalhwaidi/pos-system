@@ -9,12 +9,11 @@ export default function Inventory() {
 
   const userRole = localStorage.getItem('role') || 'cashier';
 
-  // 1️⃣ جلب المنتجات وتضمين حماية لعدم التسبب في خطأ Filter/Map
+  // 1️⃣ Fetch products from backend with safe structure parsing
   const fetchProducts = async () => {
     try {
       const response = await api.get('/products');
       
-      // استخراج المصفوفة حتى لو أرجع الباك إند Object
       const rawData = response.data;
       const dataArray = Array.isArray(rawData)
         ? rawData
@@ -22,8 +21,8 @@ export default function Inventory() {
 
       setProducts(dataArray);
     } catch (error) {
-      console.error('خطأ في جلب بيانات المخزون:', error);
-      setProducts([]); // ضمان تعيين مصفوفة فارغة عند الفشل
+      console.error('Error fetching inventory products:', error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -33,14 +32,14 @@ export default function Inventory() {
     fetchProducts();
   }, []);
 
-  // 2️⃣ دالة تسجيل الخروج
+  // 2️⃣ Logout handler
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     window.location.href = '/login';
   };
 
-  // 3️⃣ دالة إضافة منتج جديد
+  // 3️⃣ Add new product handler
   const handleAddProduct = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.price) return;
@@ -55,31 +54,31 @@ export default function Inventory() {
       };
 
       const response = await api.post('/products', productPayload);
-      alert(response.data?.message || 'تمت إضافة المنتج بنجاح');
+      alert(response.data?.message || 'Product added successfully!');
       
       fetchProducts();
       setFormData({ name: '', barcode: '', price: '', stock: '', category: '' });
     } catch (error) {
-      console.error('خطأ في إضافة المنتج:', error);
-      alert(error.response?.data?.message || 'حدث خطأ أثناء إضافة المنتج');
+      console.error('Error adding product:', error);
+      alert(error.response?.data?.message || 'Failed to add product');
     }
   };
 
-  // 4️⃣ دالة حذف المنتج
+  // 4️⃣ Delete product handler
   const handleDeleteProduct = async (id) => {
-    if (!window.confirm('هل أنت تأكد من رغبتك في حذف هذا المنتج؟')) return;
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
 
     try {
       const response = await api.delete(`/products/${id}`);
-      alert(response.data?.message || 'تم حذف المنتج بنجاح');
+      alert(response.data?.message || 'Product deleted successfully!');
       fetchProducts();
     } catch (error) {
-      console.error('خطأ في حذف المنتج:', error);
-      alert(error.response?.data?.message || 'تعذر حذف المنتج');
+      console.error('Error deleting product:', error);
+      alert(error.response?.data?.message || 'Failed to delete product');
     }
   };
 
-  // 5️⃣ دالة التعديل السريع على كمية المخزون
+  // 5️⃣ Quick stock update handler
   const handleUpdateStock = async (id, currentStock, amount) => {
     const newStock = Math.max(0, currentStock + amount);
 
@@ -91,18 +90,17 @@ export default function Inventory() {
         )
       );
     } catch (error) {
-      console.error('خطأ في تحديث الكمية:', error);
-      alert('تعذر تحديث الكمية في السيرفر');
+      console.error('Error updating stock:', error);
+      alert('Failed to update stock quantity on server');
     }
   };
 
-  // حماية آمنة للمصفوفة لاستخدامها في العرض والتصفية
   const safeProductsList = Array.isArray(products) ? products : [];
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-800 font-sans dir-rtl">
+    <div className="flex h-screen bg-slate-50 text-slate-800 font-sans">
       
-      {/* 1. القائمة الجانبية Navigation */}
+      {/* 1. Sidebar */}
       <aside className="w-64 bg-slate-900 text-white flex flex-col justify-between p-4 shadow-xl">
         <div>
           <div className="flex items-center gap-3 px-2 py-4 border-b border-slate-800">
@@ -110,28 +108,28 @@ export default function Inventory() {
               POS
             </div>
             <div>
-              <h1 className="font-bold text-lg leading-none">نظام الكاشير</h1>
-              <span className="text-xs text-blue-400 font-medium">إدارة المخزون</span>
+              <h1 className="font-bold text-lg leading-none">POS System</h1>
+              <span className="text-xs text-blue-400 font-medium">Inventory Management</span>
             </div>
           </div>
           
           <nav className="mt-6 space-y-2">
             <Link to="/" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
-              <span>🛒</span> شاشة البيع
+              <span>🛒</span> Register
             </Link>
             <Link to="/inventory" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600 text-white font-medium transition-all shadow-md shadow-blue-600/20">
-              <span>📦</span> إدارة المخزون
+              <span>📦</span> Inventory
             </Link>
           </nav>
         </div>
 
-        {/* معلومات المستخدم وزر الخروج */}
+        {/* User Role Card + Logout */}
         <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 space-y-3">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-xs text-slate-400">الصلاحية</p>
+              <p className="text-xs text-slate-400">Role</p>
               <p className="text-sm font-semibold text-white capitalize">
-                {userRole === 'manager' || userRole === 'admin' ? 'مدير النظام' : 'كاشير'}
+                {userRole === 'manager' || userRole === 'admin' ? 'Manager' : 'Cashier'}
               </p>
             </div>
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -141,28 +139,28 @@ export default function Inventory() {
             onClick={handleLogout}
             className="w-full py-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2"
           >
-            <span>🚪</span> تسجيل الخروج
+            <span>🚪</span> Logout
           </button>
         </div>
       </aside>
 
-      {/* 2. المحتوى الرئيسي */}
+      {/* 2. Main Workspace */}
       <main className="flex-1 h-screen overflow-y-auto p-8 flex flex-col gap-8">
         
-        {/* الهيدر العلوي والإحصائيات السريعة */}
+        {/* Header & Quick Stats */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">إدارة المنتجات والمخزون</h1>
-            <p className="text-sm text-slate-500">إضافة وتعديل ومتابعة كميات المنتجات في المستودع</p>
+            <h1 className="text-2xl font-bold text-slate-900">Products & Inventory</h1>
+            <p className="text-sm text-slate-500">Add, edit, and track product quantities in stock</p>
           </div>
 
           <div className="flex gap-4">
-            <div className="bg-white border border-slate-200 px-5 py-3 rounded-2xl shadow-sm text-right">
-              <span className="text-xs text-slate-500 font-medium block">إجمالي المنتجات</span>
-              <span className="text-xl font-bold text-slate-900">{safeProductsList.length} منتج</span>
+            <div className="bg-white border border-slate-200 px-5 py-3 rounded-2xl shadow-sm text-left">
+              <span className="text-xs text-slate-500 font-medium block">Total Products</span>
+              <span className="text-xl font-bold text-slate-900">{safeProductsList.length} products</span>
             </div>
-            <div className="bg-red-50 border border-red-100 px-5 py-3 rounded-2xl shadow-sm text-right">
-              <span className="text-xs text-red-600 font-medium block">منتجات نافدة</span>
+            <div className="bg-red-50 border border-red-100 px-5 py-3 rounded-2xl shadow-sm text-left">
+              <span className="text-xs text-red-600 font-medium block">Out of Stock</span>
               <span className="text-xl font-bold text-red-700">
                 {safeProductsList.filter(p => p.stock === 0).length}
               </span>
@@ -170,16 +168,16 @@ export default function Inventory() {
           </div>
         </div>
 
-        {/* نموذج إضافة منتج جديد */}
+        {/* Add Product Form */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <span>✨</span> إضافة منتج جديد
+            <span>✨</span> Add New Product
           </h2>
 
           <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <input
               type="text"
-              placeholder="اسم المنتج"
+              placeholder="Product Name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:bg-white text-sm outline-none"
@@ -187,7 +185,7 @@ export default function Inventory() {
             />
             <input
               type="text"
-              placeholder="الباركود"
+              placeholder="Barcode"
               value={formData.barcode}
               onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:bg-white text-sm outline-none"
@@ -195,7 +193,7 @@ export default function Inventory() {
             <input
               type="number"
               step="0.01"
-              placeholder="السعر (د.أ)"
+              placeholder="Price (JOD)"
               value={formData.price}
               onChange={(e) => setFormData({ ...formData, price: e.target.value })}
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:bg-white text-sm outline-none"
@@ -203,7 +201,7 @@ export default function Inventory() {
             />
             <input
               type="number"
-              placeholder="الكمية المتاحة"
+              placeholder="Stock Qty"
               value={formData.stock}
               onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:bg-white text-sm outline-none"
@@ -212,33 +210,32 @@ export default function Inventory() {
               type="submit"
               className="py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-2"
             >
-              ➕ حفظ المنتج
+              <span>➕</span> Save Product
             </button>
           </form>
         </div>
 
-        {/* جدول المنتجات المتاحة */}
+        {/* Inventory Products Table */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8 flex flex-col">
           <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <h2 className="font-bold text-slate-800">قائمة المخزون الحالي</h2>
+            <h2 className="font-bold text-slate-800">Current Inventory List</h2>
           </div>
           
-          {/* 💡 أضفنا overflow-y-auto و max-h-[500px] لتفعيل التمرير مع تثبيت الهيدر */}
           <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
             {loading ? (
-              <p className="p-6 text-center text-slate-500">جاري تحميل البيانات...</p>
+              <p className="p-6 text-center text-slate-500">Loading inventory data...</p>
             ) : safeProductsList.length === 0 ? (
-              <p className="p-6 text-center text-slate-400">لا توجد منتجات مسجلة حالياً، أضف منتجك الأول من النموذج أعلاه.</p>
+              <p className="p-6 text-center text-slate-400">No products registered yet. Add your first item using the form above.</p>
             ) : (
-              <table className="w-full text-right text-sm">
+              <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 text-slate-500 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                   <tr>
-                    <th className="p-4">اسم المنتج</th>
-                    <th className="p-4">الباركود</th>
-                    <th className="p-4">السعر</th>
-                    <th className="p-4">حالة المخزون</th>
-                    <th className="p-4 text-center">تعديل الكمية</th>
-                    <th className="p-4 text-center">الإجراءات</th>
+                    <th className="p-4">Product Name</th>
+                    <th className="p-4">Barcode</th>
+                    <th className="p-4">Price</th>
+                    <th className="p-4">Stock Status</th>
+                    <th className="p-4 text-center">Adjust Qty</th>
+                    <th className="p-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -246,14 +243,14 @@ export default function Inventory() {
                     <tr key={item.id} className="hover:bg-slate-50/80 transition-all">
                       <td className="p-4 font-semibold text-slate-800">{item.name}</td>
                       <td className="p-4 text-slate-500 font-mono">{item.barcode || '—'}</td>
-                      <td className="p-4 font-bold text-slate-900">{Number(item.price).toFixed(2)} د.أ</td>
+                      <td className="p-4 font-bold text-slate-900">{Number(item.price).toFixed(2)} JOD</td>
                       <td className="p-4">
                         {item.stock === 0 ? (
-                          <span className="px-3 py-1 bg-red-100 text-red-700 font-bold text-xs rounded-full">نفد من المخزون</span>
+                          <span className="px-3 py-1 bg-red-100 text-red-700 font-bold text-xs rounded-full">Out of Stock</span>
                         ) : item.stock < 5 ? (
-                          <span className="px-3 py-1 bg-amber-100 text-amber-700 font-bold text-xs rounded-full">منخفض ({item.stock})</span>
+                          <span className="px-3 py-1 bg-amber-100 text-amber-700 font-bold text-xs rounded-full">Low ({item.stock})</span>
                         ) : (
-                          <span className="px-3 py-1 bg-emerald-100 text-emerald-700 font-bold text-xs rounded-full">متوفر ({item.stock})</span>
+                          <span className="px-3 py-1 bg-emerald-100 text-emerald-700 font-bold text-xs rounded-full">In Stock ({item.stock})</span>
                         )}
                       </td>
                       <td className="p-4 text-center">
@@ -277,7 +274,7 @@ export default function Inventory() {
                           onClick={() => handleDeleteProduct(item.id)}
                           className="px-3 py-1.5 border border-red-200 hover:bg-red-50 text-red-600 rounded-lg text-xs font-semibold transition-all"
                         >
-                          حذف
+                          Delete
                         </button>
                       </td>
                     </tr>

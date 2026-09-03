@@ -1,6 +1,6 @@
 import prisma from '../config/prisma.js';
 
-// 1. جلب جميع المنتجات مع التصنيف
+// 1. Get all products with category
 export const getProducts = async (req, res) => {
   try {
     const products = await prisma.product.findMany({
@@ -8,39 +8,39 @@ export const getProducts = async (req, res) => {
     });
     res.json(products);
   } catch (error) {
-    res.status(500).json({ error: 'خطأ في جلب المنتجات', details: error.message });
+    res.status(500).json({ error: 'Failed to fetch products', details: error.message });
   }
 };
 
-// 2. إضافة منتج جديد
+// 2. Create a new product
 export const createProduct = async (req, res) => {
   const { barcode, name, price, costPrice, stock, categoryId } = req.body;
 
   try {
-    // التحقق من الحقول الأساسية
+    // Validate required fields
     if (!barcode || !name || price === undefined || price === null || price === '') {
-      return res.status(400).json({ error: 'يرجى إدخال الباركود، اسم المنتج، والسعر' });
+      return res.status(400).json({ error: 'Please enter barcode, product name, and price' });
     }
 
-    // معالجة costPrice بشكل آمن وتجنب NaN
+    // Safely parse costPrice and prevent NaN
     const parsedCostPrice = (costPrice !== undefined && costPrice !== null && costPrice !== '') 
       ? parseFloat(costPrice) 
       : 0.0;
 
-    // التأكد من وجود ID القسم وإلا إسناد القسم الافتراضي
-    let validCategoryId = categoryId ? parseInt(categoryId) : null;
+    // Ensure valid category ID string or assign default category
+    let validCategoryId = categoryId ? String(categoryId).trim() : null;
 
-    if (!validCategoryId || isNaN(validCategoryId)) {
+    if (!validCategoryId) {
       let defaultCategory = await prisma.category.findFirst();
       if (!defaultCategory) {
         defaultCategory = await prisma.category.create({
-          data: { name: 'عام' }
+          data: { name: 'General' }
         });
       }
       validCategoryId = defaultCategory.id;
     }
 
-    // إنشاء المنتج
+    // Create the product
     const newProduct = await prisma.product.create({
       data: {
         barcode: String(barcode).trim(),
@@ -55,11 +55,11 @@ export const createProduct = async (req, res) => {
     res.status(201).json(newProduct);
   } catch (error) {
     if (error.code === 'P2002') {
-      return res.status(400).json({ error: 'الباركود مُسجل لمنتج آخر بالفعل' });
+      return res.status(400).json({ error: 'Barcode is already registered for another product' });
     }
 
     res.status(400).json({
-      error: 'تعذر إضافة المنتج، تحقق من البيانات',
+      error: 'Failed to create product, please verify the data',
       details: error.message
     });
   }

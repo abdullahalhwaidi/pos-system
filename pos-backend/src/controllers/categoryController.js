@@ -1,28 +1,28 @@
 import prisma from '../config/prisma.js';
 
-// 1. جلب جميع التصنيفات/الأقسام
+// 1. Get all categories
 export const getCategories = async (req, res) => {
   try {
     const categories = await prisma.category.findMany({
       include: {
         _count: {
-          select: { products: true } // يرجع عدد المنتجات التابعة لكل قسم
+          select: { products: true } // Returns the count of products associated with each category
         }
       }
     });
     res.json(categories);
   } catch (error) {
-    res.status(500).json({ error: 'حدث خطأ أثناء جلب التصنيفات', details: error.message });
+    res.status(500).json({ error: 'An error occurred while fetching categories', details: error.message });
   }
 };
 
-// 2. إضافة تصنيف جديد
+// 2. Create a new category
 export const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
 
     if (!name || name.trim() === '') {
-      return res.status(400).json({ error: 'اسم التصنيف مطلوب' });
+      return res.status(400).json({ error: 'Category name is required' });
     }
 
     const category = await prisma.category.create({
@@ -31,26 +31,26 @@ export const createCategory = async (req, res) => {
       }
     });
 
-    res.status(201).json({ message: 'تم إضافة التصنيف بنجاح', category });
+    res.status(201).json({ message: 'Category created successfully', category });
   } catch (error) {
     if (error.code === 'P2002') {
-      return res.status(400).json({ error: 'اسم التصنيف موجود بالفعل' });
+      return res.status(400).json({ error: 'Category name already exists' });
     }
-    res.status(500).json({ error: 'تعذر إضافة التصنيف', details: error.message });
+    res.status(500).json({ error: 'Failed to create category', details: error.message });
   }
 };
 
-// 3. حذف تصنيف
+// 3. Delete a category
 export const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
 
     await prisma.category.delete({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
-    res.json({ message: 'تم حذف التصنيف بنجاح' });
+    res.json({ message: 'Category deleted successfully' });
   } catch (error) {
-    res.status(400).json({ error: 'تعذر حذف التصنيف أو أنه غير موجود' });
+    res.status(400).json({ error: 'Failed to delete category or it does not exist' });
   }
 };
