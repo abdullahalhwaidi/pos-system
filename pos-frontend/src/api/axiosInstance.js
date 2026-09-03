@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 1. إنشاء instance من axios بالمنفذ الصحيح (3000)
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: 'http://localhost:5000/api',
 });
 
 // 2. إعداد Request Interceptor لإرفاق الـ Token تلقائياً

@@ -17,14 +17,14 @@ function Login() {
 
     try {
       // إرسال طلب تسجيل الدخول للباك إند
-      const response = await api.post('/login', { username, password });
+      const response = await api.post('/auth/login', { username, password });
 
       // 1. حفظ التوكن والدور في localStorage
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('role', response.data.role);
 
       // 2. التوجيه الذكي حسب الدور
-      if (response.data.role === 'manager') {
+      if (response.data.role === 'admin' || response.data.role === 'manager') {
         navigate('/inventory');
       } else {
         navigate('/');
