@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../api/axiosInstance';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -30,12 +32,11 @@ export default function Login() {
         navigate('/');
       }
     } catch (err) {
-      // Extract error message from server response or set fallback
-      if (err.response && err.response.data && err.response.data.error) {
-        setError(err.response.data.error);
-      } else {
-        setError('Connection error. Please check your network or server status.');
-      }
+      
+      const errorCode = err.response?.data?.errorCode || 'CONNECTION_ERROR';
+
+      
+      setError(t(`ERRORS.${errorCode}`));
     } finally {
       setLoading(false);
     }
@@ -50,8 +51,8 @@ export default function Login() {
           <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center font-bold text-2xl text-white shadow-lg shadow-blue-500/30 mb-3">
             POS
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Sign In to POS</h1>
-          <p className="text-sm text-slate-500 mt-1">Enter your credentials to access the register</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t('LOGIN.TITLE') || 'Sign In to POS'}</h1>
+          <p className="text-sm text-slate-500 mt-1">{t('LOGIN.SUBTITLE') || 'Enter your credentials to access the register'}</p>
         </div>
 
         {/* Error Alert */}
@@ -66,28 +67,28 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-              Username
+              {t('LOGIN.USERNAME') || 'Username'}
             </label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="Enter your username"
+              placeholder={t('LOGIN.USERNAME_PLACEHOLDER') || 'Enter your username'}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white text-sm transition-all"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-              Password
+              {t('LOGIN.PASSWORD') || 'Password'}
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="Enter your password"
+              placeholder={t('LOGIN.PASSWORD_PLACEHOLDER') || 'Enter your password'}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white text-sm transition-all"
             />
           </div>
@@ -100,17 +101,19 @@ export default function Login() {
             {loading ? (
               <>
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                <span>Authenticating...</span>
+                <span>{t('LOGIN.AUTHENTICATING') || 'Authenticating...'}</span>
               </>
             ) : (
-              <span>Sign In</span>
+              <span>{t('LOGIN.SUBMIT') || 'Sign In'}</span>
             )}
           </button>
         </form>
 
         {/* Demo Credentials Footer */}
         <div className="mt-8 pt-6 border-t border-slate-100 bg-slate-50/50 -mx-8 -mb-8 p-6 rounded-b-2xl border-dashed">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 text-center">Demo Accounts</p>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 text-center">
+            {t('LOGIN.DEMO_ACCOUNTS') || 'Demo Accounts'}
+          </p>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-slate-600">
               <span className="font-bold block text-slate-800">Manager</span>

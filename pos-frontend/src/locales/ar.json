@@ -1,0 +1,9 @@
+{
+  "ERRORS": {
+    "MISSING_CREDENTIALS": "يرجى إدخال اسم المستخدم وكلمة المرور",
+    "USER_NOT_FOUND": "المستخدم غير موجود",
+    "INVALID_PASSWORD": "كلمة المرور غير صحيحة",
+    "INSUFFICIENT_STOCK": "الكمية المطلوبة غير متوفرة في المخزن",
+    "INTERNAL_SERVER_ERROR": "حدث خطأ غير متوقع في السيرفر"
+  }
+}

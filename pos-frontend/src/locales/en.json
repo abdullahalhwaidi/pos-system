@@ -1,0 +1,9 @@
+{
+  "ERRORS": {
+    "MISSING_CREDENTIALS": "Please enter username and password",
+    "USER_NOT_FOUND": "User not found",
+    "INVALID_PASSWORD": "Incorrect password",
+    "INSUFFICIENT_STOCK": "Requested quantity is not available in stock",
+    "INTERNAL_SERVER_ERROR": "An unexpected server error occurred"
+  }
+}
